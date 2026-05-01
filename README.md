@@ -5,6 +5,19 @@ Full-stack project: Express + Prisma + Postgres backend, React frontend, JWT aut
 - **Users** manage their own vehicles and create service requests.
 - **Admins** view all data and update service request status.
 
+## 🔗 Live Demo
+
+| | URL |
+|---|---|
+| **Frontend (Vercel)** | _add your Vercel URL here after deploy_ |
+| **Backend API**       | https://primetrade-internship-hwfr.onrender.com/api/v1 |
+| **Swagger docs**      | https://primetrade-internship-hwfr.onrender.com/api-docs |
+| **Health check**      | https://primetrade-internship-hwfr.onrender.com/health |
+
+> ⚠️ The backend runs on Render's free tier and **spins down after ~15 min of inactivity**. The very first request after sleep can take **~50 seconds** to wake the instance. Subsequent requests are fast. If login appears to hang on first try, just wait — it's the cold start, not a bug.
+
+Use the [pre-seeded accounts](#pre-seeded-accounts) below to log in.
+
 ---
 
 ## Tech Stack
@@ -174,3 +187,30 @@ scalability.md
 - Request body capped at 100 kB
 
 See `scalability.md` for horizontal scaling, caching, and microservices notes.
+
+---
+
+## Deployment
+
+| Layer | Host | Notes |
+|---|---|---|
+| Database | Neon (managed Postgres) | Pooled connection string |
+| Backend  | Render (free web service) | Auto-deploys on push to `main`. Cold start ~50s after idle. |
+| Frontend | Vercel (CRA preset) | Reads `REACT_APP_API_URL` at build time |
+
+### Backend env vars (set in Render dashboard)
+
+```
+DATABASE_URL      = <Neon pooled connection string>
+JWT_SECRET        = <long random string>
+JWT_EXPIRES_IN    = 7d
+CORS_ORIGIN       = <your Vercel URL, e.g. https://vsms.vercel.app>
+```
+
+### Frontend env vars (set in Vercel dashboard)
+
+```
+REACT_APP_API_URL = https://primetrade-internship-hwfr.onrender.com/api/v1
+```
+
+> If you change `REACT_APP_API_URL` after the first Vercel deploy, trigger a redeploy — CRA inlines env vars at build time.
