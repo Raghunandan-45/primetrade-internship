@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vsms
+      POSTGRES_PASSWORD: vsms
+      POSTGRES_DB: vsms
+    ports:
+      - "5432:5432"
+    volumes:
+      - vsms_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vsms -d vsms"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://vsms:vsms@db:5432/vsms?schema=public"
+      JWT_SECRET: "change-me-in-prod"
+      JWT_EXPIRES_IN: "7d"
+      PORT: "5000"
+      CORS_ORIGIN: "http://localhost:3000"
+    ports:
+      - "5000:5000"
+    command: sh -c "npx prisma migrate deploy && node prisma/seed.js && node src/server.js"
+
+volumes:
+  vsms_pg:

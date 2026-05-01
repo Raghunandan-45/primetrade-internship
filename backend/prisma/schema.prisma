@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ServiceType {
+  REGULAR
+  OIL
+  TIRE
+  BRAKE
+  BATTERY
+  ALIGNMENT
+  INSPECTION
+}
+
+enum ServiceStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+
+  vehicles        Vehicle[]
+  serviceRequests ServiceRequest[] @relation("CreatedBy")
+}
+
+model Vehicle {
+  id           String   @id @default(uuid())
+  model        String
+  year         Int
+  licensePlate String
+  vin          String   @unique
+  userId       String
+  createdAt    DateTime @default(now())
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceRequests ServiceRequest[]
+
+  @@index([userId])
+}
+
+model ServiceRequest {
+  id               String        @id @default(uuid())
+  vehicleId        String
+  issueDescription String
+  serviceType      ServiceType
+  status           ServiceStatus @default(PENDING)
+  scheduledDate    DateTime
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  createdById      String
+
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  createdBy User    @relation("CreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([createdById])
+  @@index([vehicleId])
+  @@index([status])
+}
